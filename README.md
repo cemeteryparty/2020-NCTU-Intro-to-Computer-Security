@@ -1,4 +1,10 @@
-# Kali Linux
-![kali logo](https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Kali_Linux_2.0_wordmark.svg/1280px-Kali_Linux_2.0_wordmark.svg.png)
+# 2020 NCTU Intro. to Computer Security
+NCTU 2020 Introduction to Computer Security
 ## Description
-This repository is my personal note for kali linux os.
+project collection
+
+## Project list
+>* [1](Assignment%201%20-%20Recurrences) [[solution](Assignment%201%20-%20Recurrences/980.cpp)]
+>* [2](Assignment%202%20-%20Letter%20Frequencies) [[solution](Assignment%202%20-%20Letter%20Frequencies/981.cpp)]
+>* [3](Assignment%203%20-%20Inversions) [[solution](Assignment%203%20-%20Inversions/984.cpp)]
+>* [4](Assignment%204%20-%20Finding%20Max) [[solution](Assignment%204%20-%20Finding%20Max/985.cpp)]

@@ -4,7 +4,7 @@ NCTU 2020 Introduction to Computer Security
 project collection
 
 ## Project list
->* [1](Assignment%201%20-%20Recurrences) [[solution](Assignment%201%20-%20Recurrences/980.cpp)]
->* [2](Assignment%202%20-%20Letter%20Frequencies) [[solution](Assignment%202%20-%20Letter%20Frequencies/981.cpp)]
->* [3](Assignment%203%20-%20Inversions) [[solution](Assignment%203%20-%20Inversions/984.cpp)]
->* [4](Assignment%204%20-%20Finding%20Max) [[solution](Assignment%204%20-%20Finding%20Max/985.cpp)]
+>* [Project 1: DNS Reflection and Amplification Attacks](https://github.com/cemeteryparty/2020-NCTU-Intro-to-Computer-Security/tree/master/ics-project/Project1)
+>* [Project 2](Assignment%201%20-%20Recurrences)
+>* [Project 3](Assignment%201%20-%20Recurrences)
+>* [Project 4](Assignment%201%20-%20Recurrences)

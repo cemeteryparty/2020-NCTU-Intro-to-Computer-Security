@@ -19,7 +19,6 @@ def SSH_Connect(username,hostname,password):
     else:
         print('\tCorrect password!!!\n\tpassword: ' + password)
         ssh.close()
-        atker_passwd = password
         return True
 def Dictionary_attack(server_info):
     passwdlist = ['YueHan','Wang','YH','1999','0228','oscar','Realtek','@','_']

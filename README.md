@@ -1,7 +1,5 @@
 # 2020 NCTU Intro. to Computer Security
 NCTU 2020 Introduction to Computer Security
-## Description
-project collection
 
 ## Project list
 >* [Project 1: DNS Reflection and Amplification Attacks](ics-project/Project1)

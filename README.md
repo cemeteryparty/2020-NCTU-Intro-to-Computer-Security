@@ -1,3 +1,9 @@
+# Annoucement
+
+This repo has been combined into [NCTU-CS-HW](https://github.com/cemeteryparty/NCTU-CS-HW/tree/main/2020-Spring/Intro-to-Computer-Security).
+
+This repo may be removed in the future.
+
 # 2020 NCTU Intro. to Computer Security
 NCTU 2020 Introduction to Computer Security
 
